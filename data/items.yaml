@@ -1,0 +1,36 @@
+items:
+  - id: detergente
+    name: Detergente
+    type: consumable
+    unit: "500ml"
+    stock_target: 4          # unidades que o usuário quer ter em casa
+    initial_stock: 2         # estoque no momento do setup
+    consumption_rate: 0.33   # unidades/dia (estimativa inicial; será refinada pelo histórico)
+
+  - id: papel-toalha
+    name: Papel toalha
+    type: consumable
+    unit: "pacote"
+    stock_target: 3
+    initial_stock: 1
+    consumption_rate: 0.14
+
+  - id: sabao-em-po
+    name: Sabão em pó
+    type: consumable
+    unit: "kg"
+    stock_target: 2
+    initial_stock: 1
+    consumption_rate: 0.1
+
+  - id: filtro-ar
+    name: Filtro do ar-condicionado
+    type: maintenance
+    interval_days: 90        # intervalo de troca recomendado
+    last_done: 2026-02-15    # data da última troca (ISO 8601)
+
+  - id: pastilha-vaso
+    name: Pastilha sanitária
+    type: maintenance
+    interval_days: 30
+    last_done: 2026-05-01
