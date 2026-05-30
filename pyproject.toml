@@ -17,9 +17,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov"]
+bot = ["python-telegram-bot>=21"]
+llm = ["anthropic>=0.40"]
 
 [project.scripts]
 inv = "home_inventory.cli:app"
+inv-bot = "home_inventory.telegram_bot:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
