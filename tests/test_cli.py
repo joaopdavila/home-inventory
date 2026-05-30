@@ -104,4 +104,4 @@ def test_missing_catalog_errors(tmp_path, monkeypatch):
 def test_buy_maintenance_item_errors(env):
     result = runner.invoke(cli.app, ["buy", "filtro-ar", "1"])
     assert result.exit_code == 1
-    assert "não é consumível" in result.output
+    assert "não é um item consumível" in result.output

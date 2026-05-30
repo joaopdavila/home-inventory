@@ -86,6 +86,57 @@ A taxa (`unidades/dia`) é derivada dos eventos `use` dos últimos 30 dias. Com
 menos de 3 eventos no período, o CLI usa o `consumption_rate` do YAML como
 fallback.
 
+## Bot do Telegram (backend compartilhado)
+
+Dá pra usar um chat do Telegram como backend compartilhado entre você e sua
+esposa: os dois falam com o mesmo bot, em **linguagem natural**, e todo
+`buy`/`use`/`done` cai no mesmo `inventory.db`.
+
+```
+você:  comprei 2 detergentes
+bot:   Registrado: +2 × 500ml de Detergente. Estoque atual: 4 unidades.
+
+esposa: acabou o sabão em pó
+bot:    Anotado: Sabão em pó acabou. Estoque atual: 0. ⚠ Adicionei à lista.
+
+você:  lista
+bot:   🛒 Lista de compras
+       [SEMANA] Papel toalha — 2 pacotes
+       ...
+```
+
+Entende frases como *"comprei 2 detergentes"*, *"usei um papel toalha"*,
+*"acabou o sabão"*, *"troquei o filtro do ar"*, *"como está o detergente?"*,
+*"lista"*. O reconhecimento é por regras (offline, sem custo). Se você
+configurar uma `ANTHROPIC_API_KEY`, mensagens ambíguas caem num fallback
+opcional via Claude.
+
+### Setup
+
+1. Crie um bot com o [@BotFather](https://t.me/botfather) e copie o token.
+2. Descubra os IDs do Telegram (seu e da sua esposa) — fale com o
+   [@userinfobot](https://t.me/userinfobot), ou rode o bot sem allowlist e
+   mande qualquer mensagem: ele responde com o seu ID.
+3. Configure o ambiente (veja `.env.example`):
+
+   ```bash
+   pip install -e ".[bot]"            # + ".[llm]" para o fallback via Claude
+   export INV_TELEGRAM_TOKEN=123456:ABC...
+   export INV_ALLOWED_USERS=11111111,22222222   # recomendado
+   inv-bot
+   ```
+
+O bot roda por **long polling** — funciona em qualquer máquina sempre ligada
+(Raspberry Pi, servidor caseiro, VPS, celular antigo com Termux), sem precisar
+de URL pública. **Importante:** só aceita comandos dos IDs da allowlist; sem
+ela, qualquer um que achar o bot tem acesso.
+
+### Deploy com webhook (alternativa)
+
+Para hospedar em nuvem (Railway/Fly/Render), troque `application.run_polling()`
+por `application.run_webhook(listen=..., port=..., webhook_url=...)` em
+`src/home_inventory/telegram_bot.py` e exponha um endpoint HTTPS público.
+
 ## Desenvolvimento
 
 ```bash
@@ -96,10 +147,16 @@ Estrutura:
 
 ```
 src/home_inventory/
-  models.py      # dataclasses do domínio
-  database.py    # wrapper SQLite (sem ORM)
-  catalog.py     # lê e valida items.yaml
-  engine.py      # reposição e prioridade (lógica pura)
-  cli.py         # comandos (Typer)
-  formatter.py   # formatação da lista
+  models.py        # dataclasses do domínio
+  database.py      # wrapper SQLite (sem ORM)
+  catalog.py       # lê e valida items.yaml
+  engine.py        # reposição e prioridade (lógica pura)
+  service.py       # ações compartilhadas entre CLI e bot
+  cli.py           # comandos (Typer)
+  formatter.py     # formatação da lista
+  nlp.py           # parser de linguagem natural (pt-BR)
+  llm.py           # fallback opcional via Claude
+  config.py        # configuração do bot (env)
+  bot.py           # lógica do bot (independente do Telegram)
+  telegram_bot.py  # runner do python-telegram-bot (long polling)
 ```
